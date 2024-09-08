@@ -1,8 +1,8 @@
-def restock(item, qty):
-	if num_items(item) < qty:
-		needed = qty - num_items(item)
-		for i in range(needed):
-			trade(item)
+# Retock item when qty becomes lower than `low` and trade enough to get to `high`.
+def restockItem(item, low, high):
+	if num_items(item) < low:
+		needed = high - num_items(item)
+		trade(item, needed)
 
 def processTile(desiredGroundType, desiredEntity):
 	# Desired ground type.
@@ -19,26 +19,42 @@ def processTile(desiredGroundType, desiredEntity):
 
 	# Desired entity - planting second.
 	plant(desiredEntity)
+	
+	# TODO: Watering?
 
-# Chess-like grid pattern for planting (true/false instead of white/black).
-def chessLikePattern():
-	return (get_pos_y() + get_pos_x()) % 2
+# Chess-like grid pattern for planting (0/1 instead of white/black).
+def chessLikePattern(x, y):
+	return (y + x) % 2
+	
+def restockSeeds():
+	# The possible amount of seeds we could try to plant in one full farm swipe.
+	low = get_world_size() * get_world_size()
+	
+	# Trading takes 200 cycles, so let's overstock just in case.
+	# high = max(low, 200)
+	high = low * 2
+	
+	restockItem(Items.Carrot_Seed, low, high)
+	restockItem(Items.Pumpkin_Seed, low, high)
 
 def main():
+	worldSize = get_world_size()
+	
 	while True:
-		# Buy carrot seeds if we don't have any.
-		restock(Items.Carrot_Seed, 4)
+		restockSeeds()
 
 		# Plant and harvest wood and carrots.
-		for y in range(4):
-			for x in range(4):
-				if get_pos_y() == 3:
+		for y in range(worldSize):
+			for x in range(worldSize):
+				if get_pos_y() == 4:
 					processTile(Grounds.Soil, Entities.Carrots)
-				else:
-					if chessLikePattern() == 0:
+				elif get_pos_y() >= 2:
+					if chessLikePattern(x, y) == 0:
 						processTile(Grounds.Turf, Entities.Tree)
 					else:
 						processTile(Grounds.Turf, Entities.Grass)
+				else:
+					processTile(Grounds.Soil, Entities.Pumpkin)
 				move(East)
 			move(South)
 
