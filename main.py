@@ -20,7 +20,10 @@ def processTile(desiredGroundType, desiredEntity):
 	# Desired entity - planting second.
 	plant(desiredEntity)
 	
-	# TODO: Watering?
+	# Watering
+	if get_ground_type() == Grounds.Soil:
+		if get_water() < 0.75:
+			use_item(Items.Water_Tank)
 
 # Chess-like grid pattern for planting (0/1 instead of white/black).
 def chessLikePattern(x, y):
@@ -37,7 +40,13 @@ def restockSeeds():
 	restockItem(Items.Carrot_Seed, low, high)
 	restockItem(Items.Pumpkin_Seed, low, high)
 
+	# This isn't a very accurate amount, but eventually there are so many tanks cycling that it self-sustains. 
+	if num_items(Items.Water_Tank) < high:
+		restockItem(Items.Empty_Tank, 100, 200)
+
 def main():
+	clear()
+
 	worldSize = get_world_size()
 	
 	while True:
@@ -46,9 +55,9 @@ def main():
 		# Plant and harvest wood and carrots.
 		for y in range(worldSize):
 			for x in range(worldSize):
-				if get_pos_y() == 4:
+				if get_pos_y() == 6:
 					processTile(Grounds.Soil, Entities.Carrots)
-				elif get_pos_y() >= 2:
+				elif get_pos_y() >= 4:
 					if chessLikePattern(x, y) == 0:
 						processTile(Grounds.Turf, Entities.Tree)
 					else:
