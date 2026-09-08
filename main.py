@@ -1,23 +1,34 @@
+import config
+
+# TODO: Be smarter about the sunflowers to gain the 8x power multiplier for priorizing sunflowers with more petals.
+# TODO: Sweep pathing seems inefficient, maybe a task-list and pathfinding by distance?
+# TODO: Swap cactus to improve harvest efficiency.
+
 pumpkin_id_left = 0
 pumpkin_id_right = 0
 
 def what_to_plant():
 	# Forced zoning for pumpkins.
-	if num_items(Items.Pumpkin) < 64000:
+	if num_items(Items.Pumpkin) < config.item_goals[Items.Pumpkin]:
 		if get_pos_x() < 6 and get_pos_y() < 6:
 				return Entities.Pumpkin
-
-	if num_items(Items.Power) < 100:
+		
+	# Force zozing for cactus.
+	if num_items(Items.Cactus) < config.item_goals[Items.Cactus]:
+		if get_pos_x() < 6 and get_pos_y() >= 6:
+				return Entities.Cactus
+	
+	if num_items(Items.Power) < config.item_goals[Items.Power]:
 		return Entities.Sunflower
-	if num_items(Items.Hay) < 1500:
+	if num_items(Items.Hay) < config.item_goals[Items.Hay]:
 		return Entities.Grass
-	if num_items(Items.Wood) < 300:
+	if num_items(Items.Wood) < config.item_goals[Items.Wood]:
 		return Entities.Bush
-	if num_items(Items.Carrot) < 16000:
+	if num_items(Items.Carrot) < config.item_goals[Items.Carrot]:
 		return Entities.Carrot
 
 def needs_soil(entity):
-	return entity in [Entities.Carrot, Entities.Pumpkin, Entities.Sunflower]
+	return entity in [Entities.Carrot, Entities.Pumpkin, Entities.Sunflower, Entities.Cactus]
 
 def planting():
 	entity = what_to_plant()
