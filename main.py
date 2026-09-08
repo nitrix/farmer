@@ -1,70 +1,70 @@
-# Retock item when qty becomes lower than `low` and trade enough to get to `high`.
-def restockItem(item, low, high):
-	if num_items(item) < low:
-		needed = high - num_items(item)
-		trade(item, needed)
+pumpkin_id_left = 0
+pumpkin_id_right = 0
 
-def processTile(desiredGroundType, desiredEntity):
-	# Desired ground type.
-	currentGroundType = get_ground_type()
-	if currentGroundType != desiredGroundType:
-		if currentGroundType == Grounds.Turf and desiredGroundType == Grounds.Soil:
-			till()
-		if currentGroundType == Grounds.Soil and desiredGroundType == Grounds.Turf:
-			till()
+def what_to_plant():
+	# Forced zoning for pumpkins.
+	if num_items(Items.Pumpkin) < 64000:
+		if get_pos_x() < 6 and get_pos_y() < 6:
+				return Entities.Pumpkin
 
-	# Desired entity - harvesting first.
+	if num_items(Items.Power) < 100:
+		return Entities.Sunflower
+	if num_items(Items.Hay) < 1500:
+		return Entities.Grass
+	if num_items(Items.Wood) < 300:
+		return Entities.Bush
+	if num_items(Items.Carrot) < 16000:
+		return Entities.Carrot
+
+def needs_soil(entity):
+	return entity in [Entities.Carrot, Entities.Pumpkin, Entities.Sunflower]
+
+def planting():
+	entity = what_to_plant()
+	if entity == None:
+		return
+	
+	wrong_ground = (needs_soil(entity) and get_ground_type() != Grounds.Soil) or (not needs_soil(entity) and get_ground_type() == Grounds.Soil)
+	if wrong_ground:
+		till()
+
+	plant(entity)
+
+def harvesting_pumpkin():
+	global pumpkin_id_left
+	global pumpkin_id_right
+
+	if get_entity_type() == Entities.Pumpkin:
+		if get_pos_x() == 0:
+			pumpkin_id_left = measure()
+		if get_pos_x() == 5:
+			pumpkin_id_right = measure()
+
+		if pumpkin_id_left == pumpkin_id_right:
+			harvest()
+
+def harvesting():
 	if can_harvest():
-		harvest()
+		if get_entity_type() == Entities.Pumpkin:
+			harvesting_pumpkin()
+		else:
+			harvest()
 
-	# Desired entity - planting second.
-	plant(desiredEntity)
-	
-	# Watering
-	if get_ground_type() == Grounds.Soil:
-		if get_water() < 0.75:
-			use_item(Items.Water_Tank)
+def process_tile():
+	harvesting()
+	planting()
 
-# Chess-like grid pattern for planting (0/1 instead of white/black).
-def chessLikePattern(x, y):
-	return (y + x) % 2
-	
-def restockSeeds():
-	# The possible amount of seeds we could try to plant in one full farm swipe.
-	low = get_world_size() * get_world_size()
-	
-	# Trading takes 200 cycles, so let's overstock just in case.
-	# high = max(low, 200)
-	high = low * 2
-	
-	restockItem(Items.Carrot_Seed, low, high)
-	restockItem(Items.Pumpkin_Seed, low, high)
+def infinitely_sweep_board_with(f):
+	while 1:
+		f()
 
-	# This isn't a very accurate amount, but eventually there are so many tanks cycling that it self-sustains. 
-	if num_items(Items.Water_Tank) < high:
-		restockItem(Items.Empty_Tank, 100, 200)
+		x = get_pos_x()
 
-def main():
-	clear()
+		if x < get_world_size()-1:
+			move(East)
+		elif x == get_world_size()-1:
+			move(East)
+			move(North)
 
-	worldSize = get_world_size()
-	
-	while True:
-		restockSeeds()
-
-		# Plant and harvest wood and carrots.
-		for y in range(worldSize):
-			for x in range(worldSize):
-				if get_pos_y() == 6:
-					processTile(Grounds.Soil, Entities.Carrots)
-				elif get_pos_y() >= 4:
-					if chessLikePattern(x, y) == 0:
-						processTile(Grounds.Turf, Entities.Tree)
-					else:
-						processTile(Grounds.Turf, Entities.Grass)
-				else:
-					processTile(Grounds.Soil, Entities.Pumpkin)
-				move(East)
-			move(South)
-
-main()
+#clear()
+infinitely_sweep_board_with(process_tile)
