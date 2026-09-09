@@ -3,6 +3,9 @@ import config
 # TODO: Be smarter about the sunflowers to gain the 8x power multiplier for priorizing sunflowers with more petals.
 # TODO: Sweep pathing seems inefficient, maybe a task-list and pathfinding by distance?
 # TODO: Swap cactus to improve harvest efficiency.
+# TODO: Be mindful of companions in mixed zonage to improve yield.
+# TODO: Dinosaur/snake mode.
+# TODO: Perform automatic unlocks.
 
 pumpkin_id_left = 0
 pumpkin_id_right = 0
