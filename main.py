@@ -1,4 +1,5 @@
 import config
+import crops
 
 # TODO: Be smarter about the sunflowers to gain the 8x power multiplier for priorizing sunflowers with more petals.
 # TODO: Sweep pathing seems inefficient, maybe a task-list and pathfinding by distance?
@@ -6,6 +7,7 @@ import config
 # TODO: Be mindful of companions in mixed zonage to improve yield.
 # TODO: Dinosaur/snake mode.
 # TODO: Perform automatic unlocks.
+# TODO: Mazes (weird subtances, edges, treasure). 1x1 burns through weird&fertilizer.
 
 pumpkin_id_left = 0
 pumpkin_id_right = 0
@@ -16,10 +18,15 @@ def what_to_plant():
 		if get_pos_x() < 6 and get_pos_y() < 6:
 				return Entities.Pumpkin
 		
-	# Force zozing for cactus.
+	# Force zoning for cactus.
 	if num_items(Items.Cactus) < config.item_goals[Items.Cactus]:
 		if get_pos_x() < 6 and get_pos_y() >= 6:
 				return Entities.Cactus
+
+	# Force zoning for maze.
+	if num_items(Items.Gold) < config.item_goals[Items.Gold]:
+		if get_pos_x() == get_world_size()-1 and get_pos_y() == get_world_size()-1:
+			return Entities.Bush
 	
 	if num_items(Items.Power) < config.item_goals[Items.Power]:
 		return Entities.Sunflower
@@ -64,9 +71,19 @@ def harvesting():
 		else:
 			harvest()
 
+def fertilizing():
+	if num_items(Items.Weird_Substance) < config.item_goals[Items.Weird_Substance]:
+		use_item(Items.Fertilizer)
+
+def weirding():
+	if get_pos_x() == get_world_size()-1 and get_pos_y() == get_world_size()-1:
+		use_item(Items.Weird_Substance, 1)
+
 def process_tile():
 	harvesting()
 	planting()
+	fertilizing()
+	weirding()
 
 def infinitely_sweep_board_with(f):
 	while 1:
@@ -80,5 +97,5 @@ def infinitely_sweep_board_with(f):
 			move(East)
 			move(North)
 
-#clear()
+clear()
 infinitely_sweep_board_with(process_tile)
