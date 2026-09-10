@@ -10,7 +10,7 @@ item_goals = {
 	Items.Cactus: 12000,
 	Items.Pumpkin: 64000,
 	Items.Power: 100,
-	Items.Hay: 120000,
+	Items.Hay: 134000,
 	Items.Wood: 5000,
 	Items.Carrot: 16000,
 	Items.Weird_Substance: 500,
@@ -130,7 +130,7 @@ def do_others():
 
 def main_loop():
 	mode = "hay"
-	last_mode = mode
+	last_mode = ""
 	
 	while 1:
 		if num_items(Items.Hay) < item_goals[Items.Hay]:
@@ -139,12 +139,14 @@ def main_loop():
 			mode = "others"
 
 		if mode != last_mode:
+			if last_mode != "":
+				clear()
+		
 			last_mode = mode
-			clear()
 
-			if mode == "hay":
-				do_hay()
-			elif mode == "others":
-				do_others()
+		if mode == "hay":
+			do_hay()
+		elif mode == "others":
+			do_others()
 
 main_loop()
